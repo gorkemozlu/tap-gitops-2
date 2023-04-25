@@ -1,0 +1,155 @@
+#@ load("@ytt:data", "data")
+---
+# kubectl exec -it nexus-5c64ff7cd5-gtn5w -n nexus -- cat /nexus-data/admin.password
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nexus
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+   labels:
+      app: nexus-data
+   name: nexuspvc
+   namespace: nexus
+spec:
+   accessModes:
+     - ReadWriteOnce
+   resources:
+     requests:
+       storage: 40Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: nexus
+  name: nexus
+  labels:
+    app: nexus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus
+  template:
+    metadata:
+      labels:
+        app: nexus
+    spec: # we must add init container to solving permiision denied messages fo log files
+      initContainers:
+      - name: volume-mount-hack
+        image: projects.registry.vmware.com/tanzu_meta_pocs/tools/busybox:latest
+        command: ["sh", "-c", "chown -R 200:200 /nexus-data"]
+        volumeMounts:
+        - name: nexus
+          mountPath: /nexus-data
+      containers:
+      - name: nexus
+        image: projects.registry.vmware.com/tanzu_meta_pocs/tools/nexus3:latest
+        ports:
+          - containerPort: 8081
+            name: default
+          - containerPort: 8080
+            name: specific
+        env:
+        - name: INSTALL4J_ADD_VM_PARAMS
+          value: "-Xms1500m -Xmx1500m -XX:MaxDirectMemorySize=1500m -Djava.util.prefs.userRoot=/nexus-data/javaprefs"
+        volumeMounts:
+        - name: nexus
+          mountPath: /nexus-data
+        securityContext:
+          privileged: true
+      volumes:
+      - name: nexus
+        persistentVolumeClaim:
+          claimName: nexuspvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: nexus
+  name: nexus
+  labels:
+    app: nexus
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    name: default
+    targetPort: 8081
+  - port: 8080
+    protocol: TCP
+    name: specific
+  selector:
+    app: nexus
+  type: ClusterIP
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nexus-80-tls
+  namespace: nexus
+spec:
+  commonName: #@ "nexus-80.{}".format(data.values.ingress_domain)
+  dnsNames:
+  - #@ "nexus-80.{}".format(data.values.ingress_domain)
+  issuerRef:
+    kind: ClusterIssuer
+    name: local-issuer
+  secretName: nexus-80-tls
+---
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: nexus-80-httpproxy
+  namespace: nexus
+spec:
+#  ingressClassName: tmc-local
+  routes:
+  - conditions:
+    - prefix: /
+    enableWebsockets: true
+    services:
+    - name: nexus
+      port: 80
+  virtualhost:
+    fqdn: #@ "nexus-80.{}".format(data.values.ingress_domain)
+    tls:
+      secretName: nexus-80-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nexus-8080-tls
+  namespace: nexus
+spec:
+  commonName: #@ "nexus-8080.{}".format(data.values.ingress_domain)
+  dnsNames:
+  - #@ "nexus-8080.{}".format(data.values.ingress_domain)
+  issuerRef:
+    kind: ClusterIssuer
+    name: local-issuer
+  secretName: nexus-8080-tls
+---
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: nexus-8080-httpproxy
+  namespace: nexus
+spec:
+#  ingressClassName: tmc-local
+  routes:
+  - conditions:
+    - prefix: /
+    enableWebsockets: true
+    services:
+    - name: nexus
+      port: 80
+  virtualhost:
+    fqdn: #@ "nexus-8080.{}".format(data.values.ingress_domain)
+    tls:
+      secretName: nexus-8080-tls

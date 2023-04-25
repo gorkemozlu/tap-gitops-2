@@ -1,0 +1,64 @@
+#@ load("@ytt:data", "data")
+---
+tap_install:
+  values:
+    shared:
+      ingress_domain: #@ data.values.ingress_domain
+      image_registry:
+        project_path: #@ "{}/{}".format(data.values.image_registry, data.values.image_registry_tap)
+      #@ if "ca_cert_data" in data.values:
+      ca_cert_data: #@ data.values.ca_cert_data
+      #@ end
+    ceip_policy_disclosed: true
+    profile: #@ data.values.profile
+    supply_chain: #@ data.values.supply_chain
+    ootb_supply_chain_basic:
+      registry:
+        server: #@ "{}".format(data.values.image_registry)
+        repository: #@ "{}".format(data.values.image_registry_supply_chain)
+      gitops:
+        ssh_secret: ""
+    ootb_supply_chain_testing:
+      registry:
+        server: #@ "{}".format(data.values.image_registry)
+        repository: #@ "{}".format(data.values.image_registry_supply_chain)
+      gitops:
+        ssh_secret: ""
+    ootb_supply_chain_testing_scanning:
+      registry:
+        server: #@ "{}".format(data.values.image_registry)
+        repository: #@ "{}".format(data.values.image_registry_supply_chain)
+      gitops:
+        ssh_secret: ""
+    contour:
+      envoy:
+        service:
+          type: LoadBalancer
+    buildservice:
+      kp_default_repository: #@ "{}/{}".format(data.values.image_registry, data.values.image_registry_build)
+      kp_default_repository_username: #@ data.values.image_registry_user
+      exclude_dependencies: true
+    tap_gui:
+      service_type: ClusterIP
+      metadataStoreAutoconfiguration: true
+      ingressEnabled: "true"
+      app_config:
+        catalog:
+          locations:
+            - type: url
+              target: https://github.com/MoSehsah/bank-demo/blob/main/catalog/catalog-info.yaml
+    cnrs:
+      domain_template: "{{.Name}}-{{.Namespace}}.{{.Domain}}"
+    metadata_store:
+      ns_for_export_app_cert: "*"
+      app_service_type: ClusterIP
+    scanning:
+      metadataStore:
+        url: ""
+    grype:
+      namespace: "my-apps"
+      targetImagePullSecret: "tap-registry"
+    policy:
+      tuf_enabled: false
+    tap_telemetry:
+      installed_for_vmware_internal_use: "true"

@@ -1,0 +1,94 @@
+tap_install:
+  values:
+    shared:
+      ingress_domain: tmc.h2o-4-10367.h2o.vmware.com
+      image_registry:
+        project_path: harbor.tmc.h2o-4-10367.h2o.vmware.com/tap-15
+      ca_cert_data: |
+        -----BEGIN CERTIFICATE-----
+        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
+        -----END CERTIFICATE-----
+    ceip_policy_disclosed: true
+    profile: full
+    supply_chain: basic
+    ootb_supply_chain_basic:
+      registry:
+        server: harbor.tmc.h2o-4-10367.h2o.vmware.com
+        repository: tap-15/supplychain
+      gitops:
+        ssh_secret: ""
+    ootb_supply_chain_testing:
+      registry:
+        server: harbor.tmc.h2o-4-10367.h2o.vmware.com
+        repository: tap-15/supplychain
+      gitops:
+        ssh_secret: ""
+    ootb_supply_chain_testing_scanning:
+      registry:
+        server: harbor.tmc.h2o-4-10367.h2o.vmware.com
+        repository: tap-15/supplychain
+      gitops:
+        ssh_secret: ""
+    contour:
+      envoy:
+        service:
+          type: LoadBalancer
+    buildservice:
+      kp_default_repository: harbor.tmc.h2o-4-10367.h2o.vmware.com/tap-15/build
+      kp_default_repository_username: admin
+      exclude_dependencies: true
+    tap_gui:
+      service_type: ClusterIP
+      metadataStoreAutoconfiguration: true
+      ingressEnabled: "true"
+      app_config:
+        catalog:
+          locations:
+          - type: url
+            target: https://github.com/MoSehsah/bank-demo/blob/main/catalog/catalog-info.yaml
+    cnrs:
+      domain_template: '{{.Name}}-{{.Namespace}}.{{.Domain}}'
+    metadata_store:
+      ns_for_export_app_cert: '*'
+      app_service_type: ClusterIP
+    scanning:
+      metadataStore:
+        url: ""
+    grype:
+      namespace: my-apps
+      targetImagePullSecret: tap-registry
+    policy:
+      tuf_enabled: false
+    tap_telemetry:
+      installed_for_vmware_internal_use: "true"

@@ -1,0 +1,99 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitea-repo
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gitea-tls
+  namespace: gitea-repo
+spec:
+  commonName: #@ "git.{}".format(data.values.ingress_domain)
+  dnsNames:
+  - #@ "git.{}".format(data.values.ingress_domain)
+  issuerRef:
+    kind: ClusterIssuer
+    name: local-issuer
+  secretName: git-tls
+---
+# /data/gitea/conf/app.ini
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea
+  namespace: gitea-repo
+  labels:
+    app: gitea
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitea
+  template:
+    metadata:
+      labels:
+        app: gitea
+    spec:
+      containers:
+      - name: gitea
+        image: projects.registry.vmware.com/tanzu_meta_pocs/tools/gitea/gitea:1.13.2
+        ports:
+        - containerPort: 3000
+          name: gitea
+        - containerPort: 22
+          name: git-ssh
+        volumeMounts:
+        - mountPath: /data
+          name: git-data
+      volumes:
+      - name: git-data
+        persistentVolumeClaim:
+          claimName: git-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: git-pvc
+  namespace: gitea-repo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: gitea-service
+  namespace: gitea-repo
+spec:
+  selector:
+    app: gitea
+  ports:
+  - name: gitea-http
+    port: 3000
+  - name: gitea-ssh
+    port: 22
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: gitea-httpproxy
+  namespace: gitea-repo
+spec:
+#  ingressClassName: tmc-local
+  routes:
+  - conditions:
+    - prefix: /
+    enableWebsockets: true
+    services:
+    - name: gitea-service
+      port: 3000
+  virtualhost:
+    fqdn: #@ "git.{}".format(data.values.ingress_domain)
+    tls:
+      secretName: git-tls

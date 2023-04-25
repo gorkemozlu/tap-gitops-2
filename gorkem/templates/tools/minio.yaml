@@ -1,0 +1,149 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minio
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pv-claim
+  namespace: minio
+  labels:
+    app: minio-storage-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-deployment
+  namespace: minio
+spec:
+  selector:
+    matchLabels:
+      app: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: minio-pv-claim
+      containers:
+      - name: minio
+        image: projects.registry.vmware.com/tanzu_meta_pocs/tools/minio:latest
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - minio server /storage --console-address :9001
+        env:
+        - name: MINIO_ACCESS_KEY
+          value: "minio"
+        - name: MINIO_SECRET_KEY
+          value: "minio123"
+        ports:
+        - containerPort: 9000
+          hostPort: 9000
+          name: minio
+        - containerPort: 9001
+          hostPort: 9001
+          name: console
+        volumeMounts:
+        - name: storage
+          mountPath: "/storage"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+  namespace: minio
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9000
+      name: minio
+      targetPort: 9000
+      protocol: TCP
+    - port: 9001
+      name: console
+      targetPort: 9001
+      protocol: TCP
+  selector:
+    app: minio
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: minio-tls
+  namespace: minio
+spec:
+  commonName: #@ "minio.{}".format(data.values.ingress_domain)
+  dnsNames:
+  - #@ "minio.{}".format(data.values.ingress_domain)
+  issuerRef:
+    kind: ClusterIssuer
+    name: local-issuer
+  secretName: minio-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: minio-console-tls
+  namespace: minio
+spec:
+  commonName: #@ "minio-console.{}".format(data.values.ingress_domain)
+  dnsNames:
+  - #@ "minio-console.{}".format(data.values.ingress_domain)
+  issuerRef:
+    kind: ClusterIssuer
+    name: local-issuer
+  secretName: minio-console-tls
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: minio-httpproxy
+  namespace: minio
+spec:
+#  ingressClassName: tmc-local
+  routes:
+  - conditions:
+    - prefix: /
+    enableWebsockets: true
+    services:
+    - name: minio-service
+      port: 9000
+  virtualhost:
+    fqdn: #@ "minio.{}".format(data.values.ingress_domain)
+    tls:
+      secretName: minio-tls
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: minio-console-httpproxy
+  namespace: minio
+spec:
+#  ingressClassName: tmc-local
+  routes:
+  - conditions:
+    - prefix: /
+    enableWebsockets: true
+    services:
+    - name: minio-service
+      port: 9001
+  virtualhost:
+    fqdn: #@ "minio-console.{}".format(data.values.ingress_domain)
+    tls:
+      secretName: minio-console-tls

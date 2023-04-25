@@ -1,0 +1,18 @@
+#@data/values
+---
+ingress_domain: tap.corp.com
+image_registry: harbor.corp.com
+image_registry_tap: tap-15
+image_registry_build: tap-15/build
+image_registry_supply_chain: tap-15/supplychain
+image_registry_user: admin
+image_registry_password: VMware1!
+tanzuNet_username: 'username@corp.com'
+tanzuNet_password: 'password'
+profile: full
+supply_chain: basic
+airgapped: true
+ca_cert_data-disabled: |
+  -----BEGIN CERTIFICATE-----
+  MIIFXzCCA0egAwIBAgIJAJYm37SFocjlMA0GCSqGSIb3DQEBDQUAMEY...
+  -----END CERTIFICATE-----

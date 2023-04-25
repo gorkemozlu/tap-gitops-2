@@ -1,0 +1,11 @@
+##kubectl create secret tls local-ca --key ca-no-pass.key --cert ca.crt -n cert-manager
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: local-issuer
+  namespace: cert-manager
+spec:
+  ca:
+    secretName: local-ca
+---

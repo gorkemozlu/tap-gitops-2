@@ -1,0 +1,7 @@
+gorkem/tmp-enc/key.txt
+gorkem/tmp-enc/tap-sensitive-values.yaml
+gorkem/tanzu-cluster-essentials/
+gorkem/tanzu-cluster-essentials-*.tgz
+tanzu-gitops-ri-*.tgz
+gorkem/values.yaml
+gorkem/ca.crt
