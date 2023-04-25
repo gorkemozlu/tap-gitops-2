@@ -1,0 +1,7 @@
+---
+git:
+  url: https://github.com/gorkemozlu/tap-gitops-2.git
+  ref: origin/main
+  sub_path: clusters/full-profile/cluster-config
+tap_package_repository:
+  oci_repository: harbor.tmc.h2o-4-10367.h2o.vmware.com/tap-packages

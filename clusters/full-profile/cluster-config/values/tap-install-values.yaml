@@ -1,0 +1,3 @@
+tap_install:
+  package_repository:
+    oci_repository: harbor.tmc.h2o-4-10367.h2o.vmware.com/tap-packages
