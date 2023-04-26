@@ -97,3 +97,16 @@ tap_install:
       tuf_enabled: false
     tap_telemetry:
       installed_for_vmware_internal_use: "true"
+
+    namespace_provisioner:
+      controller: false
+      gitops_install:
+        ref: origin/main
+        subPath: gorkem/namespace-provisioner/namespaces
+        url: https://github.com/gorkemozlu/tap-gitops-ri.git
+      additional_sources:
+      - git:
+          ref: origin/main
+          subPath: gorkem/namespace-provisioner/resources
+          url: https://github.com/gorkemozlu/tap-gitops-ri.git
+        path: _ytt_lib/resources
