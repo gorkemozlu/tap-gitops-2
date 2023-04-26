@@ -1,0 +1,7 @@
+#@data/values-schema
+#@overlay/match-child-defaults missing_ok=True
+---
+tbs_full_dependencies:
+  enabled: true
+  pkgr_version: 1.10.8
+  pkgr_repo_url: harbor.tmc.h2o-4-10367.h2o.vmware.com/tap-packages/tbs-full-deps:1.10.8
