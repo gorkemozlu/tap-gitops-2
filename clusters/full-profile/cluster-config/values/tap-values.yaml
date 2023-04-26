@@ -2,6 +2,7 @@ tap_install:
   values:
     shared:
       ingress_domain: tmc.h2o-4-10367.h2o.vmware.com
+      ingress_issuer: local-issuer
       image_registry:
         project_path: harbor.tmc.h2o-4-10367.h2o.vmware.com/tap-15
       ca_cert_data: |
@@ -79,6 +80,7 @@ tap_install:
             target: https://github.com/MoSehsah/bank-demo/blob/main/catalog/catalog-info.yaml
     cnrs:
       domain_template: '{{.Name}}-{{.Namespace}}.{{.Domain}}'
+      ingress_issuer: local-issuer
     metadata_store:
       ns_for_export_app_cert: '*'
       app_service_type: ClusterIP
