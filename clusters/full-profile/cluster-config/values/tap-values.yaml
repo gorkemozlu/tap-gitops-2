@@ -88,6 +88,9 @@ tap_install:
     grype:
       namespace: my-apps
       targetImagePullSecret: tap-registry
+      db:
+        dbUpdateUrl: https://minio.tmc.h2o-4-10367.h2o.vmware.com/grype/databases/listing.json
+
     policy:
       tuf_enabled: false
     tap_telemetry:
