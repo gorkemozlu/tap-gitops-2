@@ -41,7 +41,7 @@ tap_install:
         -----END CERTIFICATE-----
     ceip_policy_disclosed: true
     profile: full
-    supply_chain: basic
+    supply_chain: testing_scanning
     ootb_supply_chain_basic:
       registry:
         server: harbor.tmc.h2o-4-10367.h2o.vmware.com
