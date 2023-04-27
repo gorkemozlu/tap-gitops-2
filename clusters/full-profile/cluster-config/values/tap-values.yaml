@@ -60,7 +60,7 @@ tap_install:
         server: harbor.tmc.h2o-4-10367.h2o.vmware.com
         repository: tap-15/supplychain
       gitops:
-        ssh_secret: ""
+        ssh_secret: "git-secret"
     contour:
       envoy:
         service:
