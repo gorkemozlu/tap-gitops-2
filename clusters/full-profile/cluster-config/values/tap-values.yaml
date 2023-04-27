@@ -110,3 +110,7 @@ tap_install:
           subPath: gorkem/namespace-provisioner/resources
           url: https://github.com/gorkemozlu/tap-gitops-ri.git
         path: _ytt_lib/resources
+      import_data_values_secrets:
+      - name: workload-git-auth
+        namespace: tap-install
+        create_export: true
