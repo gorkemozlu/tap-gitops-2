@@ -61,6 +61,10 @@ tap_install:
         repository: tap-15/supplychain
       gitops:
         ssh_secret: "git-secret"
+      maven:
+        repository:
+          url: https://nexus-80.tmc.h2o-4-10367.h2o.vmware.com/repository/maven-central/
+          secret_name: "maven-credentials"
     contour:
       envoy:
         service:
